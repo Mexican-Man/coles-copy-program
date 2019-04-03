@@ -10,11 +10,11 @@ Step 2: Just double-click the executable.
 ### From an installation disk/recovery disk/internet recovery
 Step 2: Put the file onto a USB or some type of drive, then insert it into the computer in question.
 
-Step 2: Load into your recovery media.
+Step 3: Load into your recovery media.
 
-Step 3: Click **Utilities** > **Terminal**.
+Step 4: Click **Utilities** > **Terminal**.
 
-Step 4: Type in `/Volumes/**NAME_OF_THE_USB_WITH_THE_PROGRAM_AND_PATH**/run`
+Step 5: Type in `/Volumes/**NAME_OF_THE_USB_WITH_THE_PROGRAM_AND_PATH**/run`
 
 Then, just follow the CLI to backup/restore your computer.
 
