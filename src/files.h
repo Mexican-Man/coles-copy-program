@@ -13,26 +13,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
-#include <copyfile.h>
+#include "dataTransfer.h"
 using namespace std;
-
-extern std::string currentSrc;
-extern std::string currentDst;
-extern long int srcBytes;
-extern long int dstBytes;
-extern off_t currentBytes;
-extern off_t* currentBytesPtr;
-extern long int totalByteCount;
-extern unsigned int errorCount;
-
-// - Adds backslash before spaces in 's' order to be compatible with Mac OS terminal
-string formatPath(const string& s);
-
-// - Removes backslash before spaces in 's' order to be compatible with native functions
-string unformatPath(const string& s);
-
-// - Makes sure a path is a valid path
-string checkPath(const string& s);
 
 // - Prompts the user, then creates an appropriate folder name for a backup
 string getTagAndDate();
@@ -43,19 +25,45 @@ vector<string> getFiles(const string& dir);
 // - Trims a file path and returns only the folder name
 string getFolderName(const string& dir);
 
-// - Used to print progress of file transfer, meant for use in callback function 'callbackFunction'
-void printStatus(bool done);
+// - Asks the user if they want to restart
+inline bool promptFinished(){
+    string r = "";
+    cout << "Do you want to do another transfer? (y/n) ";
+    getline(cin, r);
+    
+    while (!cin.good() || r == "") {
+        cout << "Invalid answer!\n\n";
+        cin.clear();
+        r = "";
+        cout << "Do you want to do another transfer? (y/n) ";
+        getline(cin, r);
+    }
+    
+    if (tolower(r.at(0)) == 'y')
+    {
+        cout << "\n";
+        return true;
+    }
+    
+    else if (tolower(r.at(0)) == 'n')
+    {
+        cout << "\n";
+        return false;
+    }
+    
+    else if (tolower(r.at(0)) == 'q')
+    {
+        cout << "\n";
+        exit(0);
+    }
+    
+    else {
+        cout << "Invalid answer!\n";
+        promptFinished();
+    }
+    
+    return 0;
+}
 
-// - Callback function to deal with Apple's COPYFILE library
-uint32_t callbackFunction(int what, int stage, copyfile_state_t state, const char * src, const char * dst, void * ctx);
-
-// - Main function for copying files via Apple's COPYFILE library
-int copyCore(const string& fromDir, const string& toDir, unsigned int errCount);
-
-// - Copies all files in a 'dir' except for 'except'
-int copySystem(const string& fromDir, const string& toDir, const bool copySystem, unsigned int errCount);
-
-// - Copies all files in a 'dir'
-int copyFiles(const string& fromDir, const string& toDir, int errCount);
 
 #endif
