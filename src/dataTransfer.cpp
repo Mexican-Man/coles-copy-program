@@ -21,6 +21,11 @@ void DataTransfer::getSourceSize() {
 }
 
 bool DataTransfer::copy() {
+    if (filesize) {
+        cout << "Determining disk space required...\n";
+        getSourceSize();
+    }
+
     transferPtr = this;
     currentFolder = getFolderName(src);
     currentFolderSize = stof(to_string(srcBytes));
@@ -50,7 +55,6 @@ bool DataTransfer::copySystem() {
 
     for (int i = 0; i < list.size(); i++) {
         src = root + list[i];
-        cout << src << "\n" << dst << "\n\n";
         bool status = copy();
 
         if (!status) {
@@ -100,7 +104,15 @@ uint32_t callbackFunction(int what, int stage, copyfile_state_t state, const cha
 
 void DataTransfer::printStatus(bool done) {
     totalByteCount += bytesTransferred;
-    cout << fixed << setprecision(2) << "\rCopying " << currentFolder << " ~ " << CYAN << stof(to_string(totalByteCount)) / 1073741824 << RESET << "/" << BLUE << currentFolderSize / 1048576 << GREEN << "GB       " << RESET;
+    cout << fixed << setprecision(2) << "\rCopying " << currentFolder << " ~ " << CYAN << stof(to_string(totalByteCount)) / 1073741824 << RESET << "/" << BLUE;
+
+    if (filesize) {
+        cout << currentFolderSize / 1048576;
+    } else {
+        cout << "unknown";
+    }
+    
+    cout << GREEN << "GB       " << RESET;
 
     if (done) {
         cout << fixed << setprecision(2) << "\rCopying " << currentFolder << " - " << ITALIC << "Complete            \n" << RESET;
@@ -140,7 +152,7 @@ bool Session::promptBool(const string& message, const char& rtrue, const char& r
     return 0;
 }
 
-char Session::promptChar(const string& message, const char r[], int s) {
+char Session::promptChar(const string& message, const char r[], const int& s) {
     string a = "";
     cout << message << BOLD GREEN;
     getline(cin, a);
@@ -314,10 +326,7 @@ void Session::backup(char type) {
         system(("mkdir -p \"" + transfer -> dst + "\" >> /dev/null 2>> /dev/null").c_str());
 
         // Get source file size
-        if (promptBool("Would you like you check the file size (this can significantly increase wait time on older systems)? (" BOLD GREEN "y" RESET "/" BOLD RED "n" RESET "): ", 'y', 'n')) {
-            cout << "Determining disk space required...\n\n";
-            transfer -> getSourceSize();
-        }
+        transfer -> filesize = promptBool("Would you like you check the file size (this can " BOLD BLUE "significantly" RESET " increase wait time on older systems)? (" BOLD GREEN "y" RESET "/" BOLD RED "n" RESET "): ", 'y', 'n');
         printDelimiter();
 
         // Print visual aid
@@ -342,10 +351,7 @@ void Session::backup(char type) {
         system(("mkdir -p \"" + transfer -> dst + "\" >> /dev/null 2>> /dev/null").c_str());
 
         // Get source file size
-        if (promptBool("Would you like you check the file size (this can " BOLD BLUE "significantly" RESET " increase wait time on older systems)? (" BOLD GREEN "y" RESET "/" BOLD RED "n" RESET "): ", 'y', 'n')) {
-            cout << "Determining disk space required...\n\n";
-            transfer -> getSourceSize();
-        }
+        transfer -> filesize = promptBool("Would you like you check the file size (this can " BOLD BLUE "significantly" RESET " increase wait time on older systems)? (" BOLD GREEN "y" RESET "/" BOLD RED "n" RESET "): ", 'y', 'n');
         printDelimiter();
         
         // Print visual aid
@@ -382,10 +388,7 @@ void Session::restore(bool isUser) {
         printDelimiter();
 
         // Get source file size
-        if (promptBool("Would you like you check the file size (this can significantly increase wait time on older systems)? (" BOLD GREEN "y" RESET "/" BOLD RED "n" RESET "): ", 'y', 'n')) {
-            cout << "Determining disk space required...\n\n";
-            transfer -> getSourceSize();
-        }
+        transfer -> filesize = promptBool("Would you like you check the file size (this can " BOLD BLUE "significantly" RESET " increase wait time on older systems)? (" BOLD GREEN "y" RESET "/" BOLD RED "n" RESET "): ", 'y', 'n');
         printDelimiter();
 
         // Print visual aid
@@ -408,10 +411,7 @@ void Session::restore(bool isUser) {
         transfer -> dst = volumes + getFolderName(pickFolder(volumes, "Please select a drive to " BOLD BLUE "restore to" RESET " (usually Macintosh HD): "));
 
         // Get source file size
-        if (promptBool("Would you like you check the file size (this can significantly increase wait time on older systems)? (" BOLD GREEN "y" RESET "/" BOLD RED "n" RESET "): ", 'y', 'n')) {
-            cout << "Determining disk space required...\n\n";
-            transfer -> getSourceSize();
-        }
+        transfer -> filesize = promptBool("Would you like you check the file size (this can " BOLD BLUE "significantly" RESET " increase wait time on older systems)? (" BOLD GREEN "y" RESET "/" BOLD RED "n" RESET "): ", 'y', 'n');
         printDelimiter();
 
         // Print visual aid
@@ -443,10 +443,7 @@ void Session::migrate() {
     printDelimiter();
 
     // Get source file size
-    if (promptBool("Would you like you check the file size (this can significantly increase wait time on older systems)? (" BOLD GREEN "y" RESET "/" BOLD RED "n" RESET "): ", 'y', 'n')) {
-        cout << "Determining disk space required...\n\n";
-        transfer -> getSourceSize();
-    }
+    transfer -> filesize = promptBool("Would you like you check the file size (this can " BOLD BLUE "significantly" RESET " increase wait time on older systems)? (" BOLD GREEN "y" RESET "/" BOLD RED "n" RESET "): ", 'y', 'n');
     printDelimiter();
 
     // Print visual aid

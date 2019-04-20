@@ -28,6 +28,7 @@ public:
     long int totalByteCount;
     unsigned int errorCount;
     bool done;
+    bool filesize;
     
     DataTransfer() {
         src = "";
@@ -81,7 +82,7 @@ public:
     bool promptBool(const string& message, const char& rtrue, const char& rfalse);
     
     // - Prompts the user with 'message' to choose between an array 'r' of characters
-    char promptChar(const string& message, const char* r, int s);
+    char promptChar(const string& message, const char* r, const int& s);
     
     // - Prompts the user with 'message' to pick an item in 'list' then to confirm with yes or no
     int promptListConfirm(const vector<string>& list, const string& message);
