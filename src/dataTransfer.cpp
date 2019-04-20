@@ -109,7 +109,7 @@ void DataTransfer::printStatus(bool done) {
     if (filesize) {
         cout << currentFolderSize / 1048576;
     } else {
-        cout << "unknown";
+        cout << "???";
     }
     
     cout << GREEN << "GB       " << RESET;
