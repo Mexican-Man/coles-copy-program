@@ -14,7 +14,7 @@ void DataTransfer::setDestination(const string& d) {
 
 void DataTransfer::getSourceSize() {
     system("touch output.txt 2>> /dev/null");
-    system(("\"" + root + "usr/bin/du\" -sk \"" + src + "\" >> output.txt 2>> /dev/null").c_str());
+    system(("du -sk \"" + src + "\" >> output.txt 2>> /dev/null").c_str());
     ifstream t("output.txt");
     t >> srcBytes;
     system("rm output.txt 2>> /dev/null");
@@ -70,7 +70,7 @@ bool DataTransfer::copySystem() {
 
 uint32_t callbackFunction(int what, int stage, copyfile_state_t state, const char* src, const char* dst, void* ctx) {
     transferPtr -> dstBytes += transferPtr -> bytesTransferred;
-    copyfile_state_get(state, COPYFILE_STATE_COPIED, & transferPtr -> bytesTransferred);
+    copyfile_state_get(state, COPYFILE_STATE_COPIED, &transferPtr -> bytesTransferred);
 
     /*
     if (what == COPYFILE_RECURSE_FILE)
@@ -103,7 +103,7 @@ uint32_t callbackFunction(int what, int stage, copyfile_state_t state, const cha
 }
 
 void DataTransfer::printStatus(bool done) {
-    totalByteCount += bytesTransferred;
+    totalByteCount += transferPtr -> bytesTransferred;
     cout << fixed << setprecision(2) << "\rCopying " << currentFolder << " ~ " << CYAN << stof(to_string(totalByteCount)) / 1073741824 << RESET << "/" << BLUE;
 
     if (filesize) {
@@ -425,6 +425,7 @@ void Session::restore(bool isUser) {
 
 void Session::migrate() {
     cout << RESET;
+    printDelimiter();
     
     // Select source drive
     transfer -> src = pickFolder(volumes, "Please input a number to select which drive to " BOLD BLUE "migrate from " RESET ": ") + "/";
@@ -435,11 +436,11 @@ void Session::migrate() {
     printDelimiter();
 
     // Select destination drive
-    transfer -> dst = volumes + getFolderName(pickFolder("/Volumes/", "Please select a drive to " BOLD BLUE "migrate to" RESET " (usually Macintosh HD):"));
+    transfer -> dst = volumes + getFolderName(pickFolder("/Volumes/", "Please select a drive to " BOLD BLUE "migrate to" RESET " (usually Macintosh HD): "));
     printDelimiter();
 
     // Select destination user folder
-    transfer -> dst = pickFolder(transfer -> dst, "Please select a user to " BOLD BLUE "migrate to" RESET ": ") + "/";
+    transfer -> dst = pickFolder(transfer -> dst + "Users/", "Please select a user to " BOLD BLUE "migrate to" RESET ": ") + "/";
     printDelimiter();
 
     // Get source file size
@@ -487,7 +488,7 @@ void Session::tools(int type) {
 void Session::run(char type) {
     switch (type) {
         default:
-            cout << BOLD RED << "Invalid answer!\n" << RESET;
+            cout << BOLD RED << "Invalid answer!\n\n" << RESET;
             break;
         case 'b':
             backup(promptBool("Do you want to do a user backup (" BOLD GREEN "u" RESET ") or a full disk copy (" BOLD GREEN "f" RESET "): " BOLD GREEN, 'u', 'f'));
