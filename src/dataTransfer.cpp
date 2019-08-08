@@ -14,7 +14,7 @@ void DataTransfer::setDestination(const string& d) {
 
 void DataTransfer::getSourceSize() {
     system("touch output.txt 2>> /dev/null");
-    system(("du -sk \"" + src + "\" >> output.txt 2>> /dev/null").c_str());
+    system(("\"" + root + "usr/bin/du\" -sk \"" + src + "\" >> output.txt 2>> /dev/null").c_str());
     ifstream t("output.txt");
     t >> srcBytes;
     system("rm output.txt 2>> /dev/null");
@@ -115,7 +115,15 @@ void DataTransfer::printStatus(bool done) {
     cout << GREEN << "GB       " << RESET;
 
     if (done) {
-        cout << fixed << setprecision(2) << "\rCopying " << currentFolder << " - " << ITALIC << "Complete            \n" << RESET;
+        cout << fixed << setprecision(2) << "\rCopying " << currentFolder << " - "<< CYAN << stof(to_string(totalByteCount)) / 1073741824 << RESET << "/" << BLUE;
+        
+        if (filesize) {
+            cout << currentFolderSize / 1048576;
+        } else {
+            cout << "???";
+        }
+        
+        cout << GREEN << "GB " << RESET << ITALIC << "- Complete    \n" << RESET;
     }
 }
 
@@ -276,12 +284,13 @@ string Session::pickFolder(const string& dir, const string& message) {
         vector<string> l = getFiles(dir);
         r = dir + l[promptListConfirm(l, message)];
         return r;
-    } catch (const std::exception & ) {
+    } catch (const std::exception&) {
         return r;
     }
 }
 
 void Session::donePrint(int result, bool isBackup, unsigned int errCount) {
+    
     if (result == 0) {
         if (isBackup) {
             cout << GREEN << "\n================================================================================\n\nBackup completed with " << BOLD << transfer -> errorCount << RESET GREEN << " skipped files, and " << BOLD << stof(to_string(transfer -> totalByteCount)) / 1073741824 << "GB " << RESET GREEN << "transferred!\n\n================================================================================\n\n" << RESET;
@@ -306,7 +315,7 @@ void Session::backup(char type) {
     if (type) {
         printDelimiter();
         // Select source DRIVE
-        transfer -> root = volumes + getFolderName(pickFolder(volumes, "Please input a number to select a " BOLD BLUE "source" RESET " drive: "));
+        transfer -> root = volumes.substr(0, volumes.size()-1) + getFolderName(pickFolder(volumes, "Please input a number to select a " BOLD BLUE "source" RESET " drive: "));
         printDelimiter();
 
         // Select user
@@ -338,7 +347,7 @@ void Session::backup(char type) {
     } else {
         printDelimiter();
         // Select source DRIVE
-        transfer -> src = volumes + getFolderName(pickFolder(volumes, "Please input a number to select a " BOLD BLUE "source" RESET " drive: "));
+        transfer -> src = volumes.substr(0, volumes.size()-1) + getFolderName(pickFolder(volumes, "Please input a number to select a " BOLD BLUE "source" RESET " drive: "));
         transfer -> root = transfer -> src;
         printDelimiter();
 
@@ -376,15 +385,27 @@ void Session::restore(bool isUser) {
         printDelimiter();
 
         // Select source user folder
+        int checkValid = 0;
+        system("touch output.txt 2>> /dev/null");
+        system(("test -e \"" + transfer -> src + "\" && echo 1 >> output.txt || echo 0 >> output.txt").c_str());
+        ifstream t("output.txt");
+        t >> checkValid;
+        system("rm output.txt 2>> /dev/null");
+        if (checkValid == 0) {
+            cout << BOLD RED << "ERROR: There is no user folder located in this backup! Closing program.\n\n" << RESET;
+            exit(0);
+        }
+        
         transfer -> src = pickFolder(transfer -> src, "Please select a user " BOLD BLUE "to restore" RESET ": ") + "/";
         printDelimiter();
 
         // Select destination drive
-        transfer -> dst = volumes + getFolderName(pickFolder(volumes, "Please select a drive to " BOLD BLUE "restore to" RESET " (usually Macintosh HD): "));
+        transfer -> root = volumes.substr(0, volumes.size()-1) + getFolderName(pickFolder(volumes, "Please select a drive to " BOLD BLUE "restore to" RESET " (usually Macintosh HD): "));
         printDelimiter();
 
         // Select destination user folder
-        transfer -> dst = pickFolder(transfer -> dst + "/Users/", "Please select a user " BOLD BLUE "to restore" RESET ": ") + "/";
+        
+        transfer -> dst = pickFolder(transfer -> root + "Users/", "Please select a user " BOLD BLUE "to restore" RESET ": ") + "/";
         printDelimiter();
 
         // Get source file size
@@ -432,11 +453,11 @@ void Session::migrate() {
     printDelimiter();
 
     // Select source user folder
-    transfer -> src = pickFolder(transfer -> src + "Users/", "Please select a user to " BOLD BLUE "migrate from" RESET ": ") + "/";
+    transfer -> src = pickFolder(transfer -> src + "Users", "Please select a user to " BOLD BLUE "migrate from" RESET ": ") + "/";
     printDelimiter();
 
     // Select destination drive
-    transfer -> dst = volumes + getFolderName(pickFolder("/Volumes/", "Please select a drive to " BOLD BLUE "migrate to" RESET " (usually Macintosh HD): "));
+    transfer -> dst = volumes + getFolderName(pickFolder(volumes, "Please select a drive to " BOLD BLUE "migrate to" RESET " (usually Macintosh HD): "));
     printDelimiter();
 
     // Select destination user folder
