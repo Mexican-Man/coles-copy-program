@@ -449,15 +449,15 @@ void Session::migrate() {
     printDelimiter();
     
     // Select source drive
-    transfer -> src = pickFolder(volumes, "Please input a number to select which drive to " BOLD BLUE "migrate from " RESET ": ") + "/";
+    transfer -> root = pickFolder(volumes, "Please input a number to select which drive to " BOLD BLUE "migrate from " RESET ": ") + "/";
     printDelimiter();
 
     // Select source user folder
-    transfer -> src = pickFolder(transfer -> src + "Users", "Please select a user to " BOLD BLUE "migrate from" RESET ": ") + "/";
+    transfer -> src = pickFolder(transfer -> root + "Users/", "Please select a user to " BOLD BLUE "migrate from" RESET ": ") + "/";
     printDelimiter();
 
     // Select destination drive
-    transfer -> dst = volumes + getFolderName(pickFolder(volumes, "Please select a drive to " BOLD BLUE "migrate to" RESET " (usually Macintosh HD): "));
+    transfer -> dst = volumes.substr(0, volumes.size()-1) + getFolderName(pickFolder(volumes, "Please select a drive to " BOLD BLUE "migrate to" RESET " (usually Macintosh HD): "));
     printDelimiter();
 
     // Select destination user folder
